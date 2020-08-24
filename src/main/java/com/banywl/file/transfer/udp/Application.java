@@ -52,7 +52,9 @@ public class Application {
             int port = Integer.parseInt(args[2]);
             int size = Integer.parseInt(args[3]);
             String pathname = args[4];
+            System.out.println("扫描目录文件:"+pathname);
             listFile(pathname);
+            System.out.println("开始发送文件");
             try {
                 UDPFileClient client = new  UDPFileClient(ip,port,size);
                 File file = null;
