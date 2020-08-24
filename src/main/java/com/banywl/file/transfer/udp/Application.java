@@ -1,11 +1,14 @@
 package com.banywl.file.transfer.udp;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Scanner;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Application {
+
+    private static final LinkedBlockingQueue<File> FILE_QUEUE = new LinkedBlockingQueue<File>(20);
 
     /**
      * -server 18888 10240
@@ -24,13 +27,11 @@ public class Application {
             System.out.println("启动服务端");
             int port = Integer.parseInt(args[1]);
             int size = args.length == 2 ? 1024 : Integer.parseInt(args[2]);
-
             try {
                 UDPFileServer server = new UDPFileServer(port,size);
                 while (true){
                     System.out.println("等待接收");
                     server.receiveFile();
-                    System.out.println("收到文件:"+ server.getFileName());
                     File file = new File(baseDir + File.separator+ "receive" + File.separator+server.getFileName());
                     if (!file.getParentFile().exists()){
                         file.getParentFile().mkdir();
@@ -38,14 +39,8 @@ public class Application {
                     FileOutputStream fo = new FileOutputStream(file);
                     fo.write(server.getFileData());
                     fo.close();
-                    System.out.println("是否退出(Y/N)?");
-                    Scanner scanner = new Scanner(System.in);
-                    if ("y".equalsIgnoreCase(scanner.next())){
-                        break;
-                    }
+                    System.out.println("文件已写入磁盘:"+file.getAbsolutePath());
                 }
-                server.close();
-                System.out.println("服务器已关闭");
             } catch (SocketException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -57,20 +52,48 @@ public class Application {
             int port = Integer.parseInt(args[2]);
             int size = Integer.parseInt(args[3]);
             String pathname = args[4];
+            listFile(pathname);
             try {
-                UDPFileClient client = new UDPFileClient(ip,port,size);
-                client.sendFile(pathname);
+                UDPFileClient client = new  UDPFileClient(ip,port,size);
+                File file = null;
+                while ((file = FILE_QUEUE.poll()) != null){
+                    String filename = file.getAbsolutePath().replace(pathname,"");
+                    client.sendFile(pathname,filename);
+                    System.out.println("发送完成："+file.getAbsolutePath());
+                }
                 client.close();
-                System.out.println("发送完成");
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            } catch (SocketException e) {
-                e.printStackTrace();
+                System.out.println("文件发送结束，客户端退出");
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+        }else{
+            System.out.println("参数错误!");
+            System.exit(0);
         }
 
-
     }
+
+    /**
+     * 递归获取目录下的文件名
+     * @param pathname
+     */
+    public static void listFile(String pathname){
+        File dir = new File(pathname);
+        for (File file : dir.listFiles()) {
+            if (file.isDirectory()){
+                listFile(file.getAbsolutePath());
+            }else{
+                try {
+                    FILE_QUEUE.put(file);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+    }
+
+
+
 }
