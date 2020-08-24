@@ -49,7 +49,6 @@ public class UDPFileServer {
      */
     private byte[] fileData;
 
-
     /**
      * 初始化文件接收UDP服务
      *
@@ -61,8 +60,6 @@ public class UDPFileServer {
         this.socket = new DatagramSocket(port);
         this.packetSize = packetSize;
         this.packetBuf = new byte[packetSize];
-
-
         fileNameLenPacket = new DatagramPacket(fileInfo,  4);
         fileLenPacket = new DatagramPacket(fileInfo,  4,8);
         filePacket = new DatagramPacket(packetBuf,  this.packetSize);

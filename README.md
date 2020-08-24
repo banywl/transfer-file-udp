@@ -36,4 +36,23 @@ java -jar transfer.jar -client 127.0.0.1 18888 10240 /path/to/test.mp4
 
 2.windows 环境下 transfer.jar 需要指定绝对路径
 
+**OutOfMemoryException: java heap space**
+
+程序采用的是UDP对等通信策略
+
+发包解包包顺序如下
+
+第1个包: 文件名长度值 
+
+第2个包: 文件长度值
+ 
+第3个包: 文件名
+ 
+第4-n个包: 文件内容
+
+其中第3个包的长度由第1个包传递
+
+此后在第4个包接收之前会根据第二个包的值向内存申请文件接收缓存
+
+如果发现了OOM要检查发包的顺序，或者第1个包和第二个包的值是否正确
 
