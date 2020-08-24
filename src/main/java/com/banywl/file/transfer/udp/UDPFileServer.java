@@ -61,8 +61,6 @@ public class UDPFileServer {
         this.socket = new DatagramSocket(port);
         this.packetSize = packetSize;
         this.packetBuf = new byte[packetSize];
-
-
         fileNameLenPacket = new DatagramPacket(fileInfo,  4);
         fileLenPacket = new DatagramPacket(fileInfo,  4,8);
         filePacket = new DatagramPacket(packetBuf,  this.packetSize);
@@ -100,9 +98,8 @@ public class UDPFileServer {
                 System.arraycopy(packetBuf, 0, this.fileData, writePos, rsize);
                 writePos += rsize;
             }
-            System.out.println(String.format("已接收:%.4f",(double)writePos / (double) fileLen));
         }
-        System.out.println("接收完成");
+        System.out.println("接收完成："+this.fileName);
     }
 
     public void close() {
