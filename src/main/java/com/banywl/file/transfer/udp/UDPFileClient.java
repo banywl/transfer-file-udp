@@ -62,14 +62,25 @@ public class UDPFileClient {
         this.filePacket = new DatagramPacket(packetBuf,this.packetSize,this.address,port);
     }
 
+
     /**
      * udp 包顺序: 1、文件名长度值 2、文件长度值 3、文件名 4、文件内容
-     * @param filePath 文件路径
+     * @param filename 文件绝对路径
      * @throws IOException
      */
-    public void sendFile(String filePath) throws IOException {
+    public void sendFile(String filename) throws IOException {
+        String name = filename.substring(filename.lastIndexOf("/")-1);
+        this.sendFile(filename,name);
+    }
+
+    /**
+     * udp 包顺序: 1、文件名长度值 2、文件长度值 3、文件名 4、文件内容
+     * @param pathname 文件路径
+     * @throws IOException
+     */
+    public void sendFile(String pathname,String filename) throws IOException {
         // 读取系统文件
-        File file = new File(filePath);
+        File file = new File(pathname + filename);
         byte[] fileBuf = new byte[(int)file.length()];
         byte[] readBuf = new byte[2048];
         int readLen,staPos = 0;
@@ -79,12 +90,12 @@ public class UDPFileClient {
             staPos += readLen;
         }
         // 发送文件名长度值和文件长度值
-        System.arraycopy(Utils.intToBytes(file.getName().getBytes().length),0,this.fileInfoBuf,0,4);
+        System.arraycopy(Utils.intToBytes(filename.getBytes().length),0,this.fileInfoBuf,0,4);
         System.arraycopy(Utils.longToBytes(file.length()),0,this.fileInfoBuf,4,8);
         socket.send(fileNameLenPacket);
         socket.send(fileLenPacket);
         // 发送文件名
-        DatagramPacket fileNamPacket = new DatagramPacket(file.getName().getBytes(),file.getName().getBytes().length,address,port);
+        DatagramPacket fileNamPacket = new DatagramPacket(filename.getBytes(),filename.getBytes().length,address,port);
         socket.send(fileNamPacket);
 
         // 发送文件
@@ -99,14 +110,13 @@ public class UDPFileClient {
                 readIndex += rsize;
             }
             socket.send(filePacket);
-            System.out.println(String.format("已发送:%.4f",(double)readIndex / (double) file.length()));
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        System.out.println("发送完成");
+        System.out.println("发送完成："+file.getName());
     }
     public void close(){
         this.socket.close();
