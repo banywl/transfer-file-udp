@@ -59,7 +59,7 @@ public class Application {
                 listFile(pathname);
             } else if ("-file".equals(type)) {
                 pathname = "";
-                for (int i = 5; i < args.length; i++) {
+                for (int i = 4; i < args.length; i++) {
                     String arg = args[i];
                     try {
                         File file = new File(args[i]);
