@@ -20,7 +20,7 @@ public class UDPFileServer {
     /**
      * 文件包数据大小
      */
-    private int packetSize;
+    private int packetSize = 40960;
     /**
      * 名称长度值占用4字节
      * 文件长度值占用8字节
@@ -39,7 +39,7 @@ public class UDPFileServer {
      */
     private DatagramPacket fileLenPacket;
     /**
-     * 文件数据封包使用512字节缓冲区分段接收
+     * 文件数据封包使用 packetSize 字节缓冲区分段接收
      */
     private DatagramPacket filePacket;
     /**
@@ -56,13 +56,11 @@ public class UDPFileServer {
      * 初始化文件接收UDP服务
      *
      * @param port 监听端口
-     * @param packetSize 封包大小
      * @throws SocketException
      */
-    public UDPFileServer(int port, int packetSize) throws SocketException {
+    public UDPFileServer(int port) throws SocketException {
         this.socket = new DatagramSocket(port);
-        this.packetSize = packetSize;
-        this.packetBuf = new byte[packetSize];
+        this.packetBuf = new byte[this.packetSize];
         fileNameLenPacket = new DatagramPacket(fileInfo,  4);
         fileLenPacket = new DatagramPacket(fileInfo,  4,8);
         filePacket = new DatagramPacket(packetBuf,  this.packetSize);

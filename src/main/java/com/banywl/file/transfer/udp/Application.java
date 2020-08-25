@@ -26,9 +26,8 @@ public class Application {
 
         if ("-server".equals(args[0])) {
             int port = Integer.parseInt(args[1]);
-            int size = args.length == 2 ? 1024 : Integer.parseInt(args[2]);
             try {
-                UDPFileServer server = new UDPFileServer(port, size);
+                UDPFileServer server = new UDPFileServer(port);
                 System.out.println("服务端已启动");
                 while (true) {
                     System.out.println("等待中...");
@@ -53,8 +52,7 @@ public class Application {
             String type = args[1];
             String ip = args[2];
             int port = Integer.parseInt(args[3]);
-            int size = Integer.parseInt(args[4]);
-            String pathname = args[5];
+            String pathname = args[4];
 
             if ("-dir".equals(type)) {
                 System.out.println("扫描目录:" + pathname);
@@ -78,7 +76,7 @@ public class Application {
             System.out.println("文件总数:" + FILE_QUEUE.size());
             System.out.println("====================================================");
             try {
-                UDPFileClient client = new UDPFileClient(ip, port, size);
+                UDPFileClient client = new UDPFileClient(ip, port);
                 File file = FILE_QUEUE.poll();
                 while (file != null) {
                     String filename = file.getAbsolutePath().replace(pathname, "");

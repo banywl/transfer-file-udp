@@ -19,7 +19,7 @@ public class UDPFileClient {
     /**
      * 包大小
      */
-    private int packetSize;
+    private final int packetSize = 40960;
     /**
      * 文件包
      */
@@ -49,14 +49,12 @@ public class UDPFileClient {
      * 初始化文件发送
      * @param hostname 目标主机名称
      * @param port 目标端口
-     * @param packetSize 封包大小
      * @throws UnknownHostException
      * @throws SocketException
      */
-    public UDPFileClient(String hostname, int port,int packetSize) throws UnknownHostException, SocketException {
+    public UDPFileClient(String hostname, int port) throws UnknownHostException, SocketException {
         this.address = InetAddress.getByName(hostname);
         this.port = port;
-        this.packetSize = packetSize;
         this.packetBuf = new byte[this.packetSize];
         // 文件名长度值用4字节
         this.fileNameLenPacket = new DatagramPacket(this.fileInfoBuf,4,this.address,port);
