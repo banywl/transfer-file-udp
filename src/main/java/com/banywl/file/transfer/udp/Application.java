@@ -25,13 +25,13 @@ public class Application {
         }
 
         if ("-server".equals(args[0])) {
-            System.out.println("启动服务端");
             int port = Integer.parseInt(args[1]);
             int size = args.length == 2 ? 1024 : Integer.parseInt(args[2]);
             try {
                 UDPFileServer server = new UDPFileServer(port, size);
+                System.out.println("服务端已启动");
                 while (true) {
-                    System.out.println("等待接收");
+                    System.out.println("等待中...");
                     server.receiveFile();
                     File file = new File(baseDir + File.separator + "receive" + File.separator + server.getFileName());
                     if (!file.getParentFile().exists()) {
@@ -40,7 +40,8 @@ public class Application {
                     FileOutputStream fo = new FileOutputStream(file);
                     fo.write(server.getFileData());
                     fo.close();
-                    System.out.println("文件已写入磁盘:" + file.getAbsolutePath());
+                    System.out.println("文件已写入到目录:" + file.getAbsolutePath());
+                    System.out.println("====================================================");
                 }
             } catch (SocketException e) {
                 e.printStackTrace();
@@ -48,27 +49,48 @@ public class Application {
                 e.printStackTrace();
             }
         } else if ("-client".equals(args[0])) {
-            System.out.println("启动客户端");
-            String ip = args[1];
-            int port = Integer.parseInt(args[2]);
-            int size = Integer.parseInt(args[3]);
-            String pathname = args[4];
-            System.out.println("扫描目录文件:" + pathname);
-            listFile(pathname);
-            System.out.println("开始发送文件");
+
+            String type = args[1];
+            String ip = args[2];
+            int port = Integer.parseInt(args[3]);
+            int size = Integer.parseInt(args[4]);
+            String pathname = args[5];
+
+            if ("-dir".equals(type)) {
+                System.out.println("扫描目录:" + pathname);
+                listFile(pathname);
+            } else if ("-file".equals(type)) {
+                pathname = "";
+                for (int i = 5; i < args.length; i++) {
+                    String arg = args[i];
+                    try {
+                        File file = new File(args[i]);
+                        FILE_QUEUE.put(file);
+                        System.out.println("文件:" + file.getName());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                System.out.println("参数错误!");
+                System.exit(0);
+            }
+            System.out.println("文件总数:" + FILE_QUEUE.size());
+            System.out.println("====================================================");
             try {
                 UDPFileClient client = new UDPFileClient(ip, port, size);
-                File file = null;
-                while ((file = FILE_QUEUE.poll()) != null) {
+                File file = FILE_QUEUE.poll();
+                while (file != null) {
                     String filename = file.getAbsolutePath().replace(pathname, "");
                     client.sendFile(pathname, filename);
-                    System.out.println("发送完成：" + file.getAbsolutePath());
+                    file = FILE_QUEUE.poll();
                 }
                 client.close();
                 System.out.println("文件发送结束，客户端退出");
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
 
         } else {
             System.out.println("参数错误!");
@@ -88,7 +110,7 @@ public class Application {
             if (file.isDirectory()) {
                 listFile(file.getAbsolutePath());
             } else {
-                System.out.println("装载文件:" + file.getName());
+                System.out.println("找到文件:" + file.getName());
                 try {
                     FILE_QUEUE.put(file);
                 } catch (InterruptedException e) {

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 /**
  * 文件接收服务器
@@ -79,12 +81,28 @@ public class UDPFileServer {
         // 读取文件长度
         this.socket.receive(fileLenPacket);
         // 取回文件名
-        byte[] fileNameBuf = new byte[Utils.bytesToInt(this.fileInfo)];
+        int nameLength = Utils.bytesToInt(this.fileInfo);
+        if (nameLength < 0){
+            System.out.println("接收失败，文件名称长度错误:" + nameLength);
+            System.out.println("====================================================");
+            return;
+        }
+        System.out.println("文件名长度: " + nameLength);
+        byte[] fileNameBuf = new byte[nameLength];
         DatagramPacket fnPacket = new DatagramPacket(fileNameBuf, fileNameBuf.length);
         this.socket.receive(fnPacket);
         this.fileName = new String(fileNameBuf);
+        System.out.println("文件名称: " +fileName);
         // 建立文件缓冲区,读取文件内容到缓冲区
         int fileLen = (int) Utils.bytesToLong(this.fileInfo,4);
+        if (fileLen < 0){
+            System.out.println("接收失败，文件长度错误:" + fileLen);
+            System.out.println("====================================================");
+            return;
+        }
+        System.out.println(String.format("文件长度: %s(%d)",Utils.storeUnit(fileLen),fileLen));
+        System.out.print("当前接收进度:\40\40\40\40");
+        LocalDateTime sta = LocalDateTime.now();
         this.fileData = new byte[fileLen];
         int writePos = 0;
         while (writePos != fileLen) {
@@ -98,8 +116,16 @@ public class UDPFileServer {
                 System.arraycopy(packetBuf, 0, this.fileData, writePos, rsize);
                 writePos += rsize;
             }
+
+            String progress = String.format("%.2f",((double)writePos / (double)fileLen));
+            System.out.print(Utils.FRONT_CHART.substring(0,progress.length()));
+            System.out.print(progress);
+
         }
-        System.out.println("接收完成："+this.fileName);
+        System.out.print("\n");
+        Duration duration = Duration.between(sta,LocalDateTime.now());
+        System.out.println("接收耗时："+duration.getSeconds());
+        System.out.println("====================================================");
     }
 
     public void close() {

@@ -2,6 +2,9 @@ package com.banywl.file.transfer.udp;
 
 public class Utils {
 
+    public static final String FRONT_CHART = "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+
+
     /**
      * int 转 byte 数组
      *
@@ -77,6 +80,28 @@ public class Utils {
         }
         return values;
     }
+
+
+    /**
+     * 字节长度转MB
+     * @param len 长度值
+     * @return
+     */
+    public static String storeUnit(long len){
+
+        double[] unit = {1,1024, 1048576, 1073741824};
+        String[] suffix = {"B","KB","MB","GB"};
+
+        for (int i = 0;i < unit.length;i++){
+            if (len < unit[i]){
+                return String.format("%.2f %s",(len / unit[i-1]),suffix[i-1]);
+            }
+        }
+        return len+"B";
+    }
+
+
+
 
 
 }

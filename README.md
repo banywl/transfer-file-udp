@@ -10,11 +10,21 @@ jdk 1.8
 
 ***服务端(接收文件)启动命令如下***
 
-> java -jar transfer.jar -server 端口号 文件传输大小
+```bash
+java -jar transfer.jar -server 端口号 文件传输大小
+```
 
-***客户端(发送文件)启动命令如下***
+***客户端(发送整个目录下文件)命令如下***
 
-> java -jar transfer.jar -client 地址 端口号 文件传输大小 文件根目录
+```bash
+java -jar transfer.jar -client -dir 地址 端口号 文件传输大小 文件根目录
+```
+***客户端(发送单个文件，支持多个文件发送)命令如下***
+
+```bash
+java -jar transfer.jar -client -file 地址 端口号 文件传输大小 文件1 文件2 文件3 ....
+```
+
 
 !!! Caution 注意: 服务端设置的文件传输大小需要与客户端设置的文件传输大小保持一致
 

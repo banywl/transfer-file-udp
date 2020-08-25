@@ -2,6 +2,10 @@ package com.banywl.file.transfer.udp;
 
 import java.io.*;
 import java.net.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.ZoneOffset;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -98,6 +102,11 @@ public class UDPFileClient {
         DatagramPacket fileNamPacket = new DatagramPacket(filename.getBytes(),filename.getBytes().length,address,port);
         socket.send(fileNamPacket);
 
+        System.out.println("文件名:"+file.getName());
+        System.out.println("文件名长度:" + file.getName().getBytes().length);
+        System.out.println("文件大小:"+Utils.storeUnit(file.length()));
+        System.out.print("当前发送进度:\40\40\40\40");
+        LocalDateTime sta = LocalDateTime.now();
         // 发送文件
         int readIndex = 0;
         while (readIndex != fileBuf.length){
@@ -111,12 +120,20 @@ public class UDPFileClient {
             }
             socket.send(filePacket);
             try {
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.MILLISECONDS.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            String progress = String.format("%.2f",((double)readIndex / (double)fileBuf.length));
+            System.out.print(Utils.FRONT_CHART.substring(0,progress.length()));
+            System.out.print(progress);
         }
-        System.out.println("发送完成："+file.getName());
+        System.out.print("\n");
+
+        Duration duration = Duration.between(sta,LocalDateTime.now());
+        System.out.println("发送耗时："+duration.getSeconds());
+        System.out.println("====================================================");
     }
     public void close(){
         this.socket.close();
